@@ -7,8 +7,9 @@
 	<title>Data</title>
 </head>
 <body>
-    <div th:each="dataQuantity : ${sumByQuantity}">
-    <table th:each="dataPrice : ${sumByPrice}">
+    
+    
+    <table style="border-collapse: collapse;">
         <thead>
             <tr>
                 <td>
@@ -25,15 +26,23 @@
                 </td>
             </tr>
         </thead>
-        <tbody th:with="weightedAverage = ${dataPrice.value / dataQuantity.value} ">
-            <tr>
-                <td th:text="*{dataQuantity.key}"></td>
-                <td th:text="*{dataQuantity.value}"></td>
-                <td th:text="${#numbers.formatDecimal(dataPrice.value,1,'COMMA',2,'POINT')}"></td>
-                <td th:text="${#numbers.formatDecimal(weightedAverage,1,2)}"></td>
+        <tbody>
+            <tr></tr>
+            <div th:each="dataList : ${allData}">
+            <tr th:each="data,status : ${dataList.value}">
+                <td th:if="${status.last}" th:text="*{data.conract}"></td>
+                <td th:if="${status.last}" th:text="*{data.totalQuantity}"></td></span>
+                <td th:if="${status.last}" th:text="${#numbers.formatDecimal(data.totalPrice,1,'COMMA',2,'POINT')}"></td>
+                <td th:if="${status.last}" th:with="weightedAverage = ${data.totalPrice / data.totalQuantity} " th:text="${#numbers.formatDecimal(weightedAverage,1,2)}"></td>
             </tr>
+        </div>
         </tbody>
     </table>
+
+    
+
+    
+
     </div>
 </body>
 </html>

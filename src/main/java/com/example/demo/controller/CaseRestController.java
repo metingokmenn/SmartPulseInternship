@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 
@@ -33,7 +35,7 @@ public class CaseRestController {
     List<IntraDayTradeHistoryList> desiredData;
     List<IntraDayTradeHistoryList> allData;
 
-    HashMap<String,IntraDayTradeHistoryList> combinedData;
+    HashMap<String,ArrayList<IntraDayTradeHistoryList>> combinedData;
 
     
 
@@ -42,8 +44,6 @@ public class CaseRestController {
 
     @GetMapping("/list-trades")
     public ModelAndView convertXmlToTrade() throws Exception {
-        HashMap<String, Double> sumByContractPrice = new HashMap<>();
-        HashMap<String, Long> sumByConractQuantity = new HashMap<>();
 
         ModelAndView mv = new ModelAndView("data-table");
 
@@ -51,31 +51,36 @@ public class CaseRestController {
         trade = parseJsonToMap(jsonData);
         desiredData = new ArrayList<IntraDayTradeHistoryList>();
 
-        combinedData = new HashMap<String,IntraDayTradeHistoryList>();
+        combinedData = new HashMap<String,ArrayList<IntraDayTradeHistoryList>>();
 
         allData = trade.getBody().getIntraDayTradeHistoryList();
 
-
+        
         eliminateConracts();
+
+        Map<String, List<IntraDayTradeHistoryList>> tradeListGrouped =
+        desiredData.stream().collect(Collectors.groupingBy(w -> w.getConract()));
+
+
 
         Collections.sort(desiredData, new IntraDayTradeHistoryList());
 
+        for (List<IntraDayTradeHistoryList> tradeData : tradeListGrouped.values()) {
+            double priceSum = 0;
+            double quantitySum = 0;
+            for (int i = 0; i < tradeData.size() ; i++) {
+                priceSum += tradeData.get(i).getPrice() * tradeData.get(i).getQuantity() / 10;
+                quantitySum += tradeData.get(i).getQuantity() / 10;
 
-
-        for (IntraDayTradeHistoryList tradeData : desiredData) {
-            String conract = tradeData.getConract();
-            double price = tradeData.getPrice();
-            long quantity = tradeData.getQuantity();
-
-            sumByContractPrice.put(conract, sumByContractPrice.getOrDefault(conract, 0.0) + price);
-            sumByConractQuantity.put(conract, sumByConractQuantity.getOrDefault(conract, Long.valueOf("0")) + quantity);
-
-            
+                tradeData.get(i).setTotalPrice(priceSum);
+                tradeData.get(i).setTotalQuantity(quantitySum);
+                
+            }
         }
 
-        mv.addObject("allData", desiredData);
-        mv.addObject("sumByPrice", sumByContractPrice);
-        mv.addObject("sumByQuantity", sumByConractQuantity);
+        mv.addObject("allData", tradeListGrouped);
+        
+        
 
         return mv;
     }
@@ -94,7 +99,7 @@ public class CaseRestController {
     }
 
     private String fetchJsonDataFromUrl() {
-        String url = "https://seffaflik.epias.com.tr/transparency/service/market/intra-day-trade-history?endDate=2023-06-01&startDate=2023-06-01"; 
+        String url = "https://seffaflik.epias.com.tr/transparency/service/market/intra-day-trade-history?endDate=2023-06-01&startDate=2023-06-01";
 
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         return response.getBody();

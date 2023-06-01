@@ -11,8 +11,26 @@ public class IntraDayTradeHistoryList implements Comparator<IntraDayTradeHistory
     private double price;
     private long quantity;
 
+    private double totalPrice;
+
+    private double totalQuantity;
+
     
 
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+    public double getTotalQuantity() {
+        return totalQuantity;
+    }
+    public void setTotalQuantity(double totalQuantity) {
+        this.totalQuantity = totalQuantity;
+    }
+
+    
     @JsonProperty("id")
     public long getId() { return id; }
     @JsonProperty("id")
