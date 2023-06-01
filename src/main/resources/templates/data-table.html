@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<link rel="stylesheet" href="/css/style.css">
+	<meta charset="UTF-8">
+	<title>Data</title>
+</head>
+<body>
+    <div th:each="dataQuantity : ${sumByQuantity}">
+    <table th:each="dataPrice : ${sumByPrice}">
+        <thead>
+            <tr>
+                <td>
+                    Tarih
+                </td>
+                <td>
+                    Toplam İşlem Miktari (MWh)
+                </td>
+                <td>
+                    Toplam İşlem Tutarı (TL)
+                </td>
+                <td>
+                    Ağırlık Ortalama Fiyat (TL/MWh)
+                </td>
+            </tr>
+        </thead>
+        <tbody th:with="weightedAverage = ${dataPrice.value / dataQuantity.value} ">
+            <tr>
+                <td th:text="*{dataQuantity.key}"></td>
+                <td th:text="*{dataQuantity.value}"></td>
+                <td th:text="${#numbers.formatDecimal(dataPrice.value,1,'COMMA',2,'POINT')}"></td>
+                <td th:text="${#numbers.formatDecimal(weightedAverage,1,2)}"></td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</body>
+</html>
